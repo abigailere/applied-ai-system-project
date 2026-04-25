@@ -1,4 +1,9 @@
 from recommender import load_songs, recommend_songs, recommend_wildcard
+"""
+Replace get_user_prefs() with a free-text input prompt
+Replace recommend_songs() call with the ChromaDB retrieval
+wire the explaination into the display for each recommended song
+"""
 
 
 def display_recommendations(recommendations: list, user_prefs: dict) -> None:
