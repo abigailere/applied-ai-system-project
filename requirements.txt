@@ -2,6 +2,6 @@ pandas
 pytest
 streamlit
 chromadb
-anthropic
+google-genai
 sentence-transformers
 python-dotenv
