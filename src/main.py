@@ -1,87 +1,32 @@
-from recommender import load_songs, recommend_songs, recommend_wildcard
+from .recommender import load_songs
+from .rag_retriever import build_chromadb_index, query_chromadb
+from .context_retriever import load_artists_facts, build_artist_index, get_artist_context
+from .explainer import generate_explanation
 """
 Replace get_user_prefs() with a free-text input prompt
 Replace recommend_songs() call with the ChromaDB retrieval
 wire the explaination into the display for each recommended song
 """
 
-
-def display_recommendations(recommendations: list, user_prefs: dict) -> None:
-    width = 52
-    sep = "-" * width
-
-    print(f"\n{sep}")
-    print(f"  User Preference  |  mood: {user_prefs['favorite_mood']}  energy: {user_prefs['target_energy']}")
-    print(sep)
-
-    for i, (song, score, explanation) in enumerate(recommendations, 1):
-        bar_filled = round(score * 20)
-        bar = "#" * bar_filled + "." * (20 - bar_filled)
-        reasons = [r.strip() for r in explanation.split(",")]
-
-        print(f"\n  #{i}  {song['title']}  -  {song['artist']}")
-        print(f"       [{bar}]  {score:.2f}")
-        for reason in reasons:
-            print(f"       * {reason}")
-
-    print(f"\n{sep}\n")
-
-
-VALID_MOODS = ["happy", "relaxed", "chill", "focused", "moody", "intense"]
-
-
-def get_user_prefs() -> dict:
-    width = 52
-    sep = "-" * width
-    print(f"\n{sep}")
-    print(f"  Music Recommender")
-    print(sep)
-
-    # Mood input
-    print(f"\n  Moods: {', '.join(VALID_MOODS)}")
-    while True:
-        mood = input("  Enter your mood: ").strip().lower()
-        if mood in VALID_MOODS:
-            break
-        print(f"  Invalid mood. Choose from: {', '.join(VALID_MOODS)}")
-
-    # Energy input
-    print("\n  Energy is a number from 0.0 (very calm) to 1.0 (very intense)")
-    while True:
-        raw = input("  Enter your energy level: ").strip()
-        try:
-            energy = float(raw)
-            if 0.0 <= energy <= 1.0:
-                break
-            print("  Please enter a number between 0.0 and 1.0")
-        except ValueError:
-            print("  That's not a valid number. Try something like 0.7")
-
-    return {"favorite_mood": mood, "target_energy": energy}
-
-
 def main() -> None:
+    #load the songs
     songs = load_songs("data/songs.csv")
+    song_collection = build_chromadb_index(songs)
+    songs_by_id = {song["id"]: song for song in songs}
+      
+    #load artists
+    artist_facts = load_artists_facts("data/artist_facts.csv")
+    artist_collection = build_artist_index(artist_facts)
+    
+    #get user input
+    usr_input = input("What kind of music are you in the mood for? ")
 
-    user_prefs = get_user_prefs()
+    print("\n" + "-" * 52)
+    for song in query_chromadb(usr_input, songs_by_id, song_collection, k=1):
+        artist_blurb = get_artist_context(song["artist"], artist_collection)
+        explanation = generate_explanation(song, artist_blurb, usr_input)
+        print(f"* {song['title']} by {song['artist']} * \n{explanation}\n")
 
-    recommendations = recommend_songs(user_prefs, songs, k=5)
-    display_recommendations(recommendations, user_prefs)
-
-    wildcard_song, wildcard_score, wildcard_explanation = recommend_wildcard(user_prefs, songs, exclude=[s for s, _, _ in recommendations])
-    width = 52
-    sep = "-" * width
-    bar_filled = round(wildcard_score * 20)
-    bar = "#" * bar_filled + "." * (20 - bar_filled)
-    reasons = [r.strip() for r in wildcard_explanation.split(",")]
-    print(f"{sep}")
-    print(f"  Wild Card Pick")
-    print(sep)
-    print(f"\n  {wildcard_song['title']}  -  {wildcard_song['artist']}")
-    print(f"       [{bar}]  {wildcard_score:.2f}")
-    for reason in reasons:
-        print(f"       * {reason}")
-    print(f"\n{sep}\n")
 
 
 if __name__ == "__main__":

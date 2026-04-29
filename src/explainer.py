@@ -11,14 +11,15 @@ import google.generativeai as genai
 
 load_dotenv()
 API_KEY = os.getenv('GOOGLE_GEMINI_API_KEY')
-
+professional_instruction = "You are a music curator who crafts personalized explanations for why a song matches a listener's vibe."
+uninterested_instruction = "You are a music curator who crafts personalized explanations for why a song matches a listener's vibe. You are not interested in the listener's preferences and just want to write something generic that could apply to any song."
 def generate_explanation(song, artist_blurb, user_query):
     genai.configure(api_key=API_KEY)
     model = genai.GenerativeModel(
         model_name="gemini-2.5-flash",
-        system_instruction="You are a music curator who crafts personalized explanations for why a song matches a listener's vibe."
+        system_instruction=professional_instruction
     )
-    ggemini_prompt = f"""You are a music curator who crafts personalized explanations for why a song matches a listener's vibe. Here is the information you have to work with: {song['title']} by {song['artist']}, which has a {song['mood']} mood, falls within the {song['genre']} genre, and has a tempo of {song['tempo_bpm']} BPM. The artist is described as: {artist_blurb}. The listener said they were in the mood for: "{user_query}". Based on this information, write a concise 2-sentence explanation of why this song is a great match for the listener's vibe. Focus on the most compelling connections between the song's characteristics, the artist's style, and the listener's expressed preferences."""
+    ggemini_prompt = f"""Here is the information you have to work with: {song['title']} by {song['artist']}, which has a {song['mood']} mood, falls within the {song['genre']} genre, and has a tempo of {song['tempo_bpm']} BPM. The artist is described as: {artist_blurb}. The listener said they were in the mood for: "{user_query}". Based on this information, write a concise 2-sentence explanation of why this song is a great match for the listener's vibe. Focus on the most compelling connections between the song's characteristics, the artist's style, and the listener's expressed preferences."""
     try:
         response = model.generate_content(ggemini_prompt)
         return response.text

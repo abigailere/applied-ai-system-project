@@ -6,7 +6,7 @@ Function that retrieves the most relevant blurb for a given song
 import csv
 import chromadb
 from chromadb.utils import embedding_functions
-def load_artists_facts(csv_path):
+def load_artists_facts(csv_path) -> list:
     # load the csv into a list of dicts
     # read the "artist" and "blurb" columns and return list of dicts
         #one per artist each with "artist" and "blurb" keys
@@ -43,7 +43,7 @@ Three things to map:
     name_collection.add(documents=blurb_list, ids=artist_list)
     return name_collection
 
-def get_artist_context(artist_name, collection):
+def get_artist_context(artist_name, collection) -> str:
     """
 Takes an artist name string and the collection, returns the blurb.
 

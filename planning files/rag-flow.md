@@ -21,8 +21,8 @@ flowchart TD
     subgraph RETRIEVAL["RETRIEVAL — The R in RAG"]
         QVEC --> SIM["Cosine Similarity Search\n─────────────────────\nCompares query vector\nagainst all song vectors"]
         SONGDB --> SIM
-        SIM --> TOPK["Top 5 Matching Songs"]
-        TOPK --> CTX["Retrieve Artist Context\n─────────────────────\nFor each song, query Artist Index\nusing artist name + genre"]
+        SIM --> TOPK["Top 3 Matching Songs\n─────────────────────\nArtist name is already\nknown from each match"]
+        TOPK --> CTX["Retrieve Artist Blurb\n─────────────────────\nExact ID lookup by artist name\nNo semantic search needed"]
         ARTISTDB --> CTX
     end
 
@@ -32,11 +32,11 @@ flowchart TD
     end
 
     subgraph GENERATION["GENERATION — The G in RAG"]
-        BUILD --> CLAUDE["Claude API\n─────────────────────\nAI: reads the injected context\nand writes an answer grounded\nin your actual data"]
+        BUILD --> GEMINI["Gemini API\n─────────────────────\nAI: reads the injected context\nand writes an answer grounded\nin your actual data"]
     end
 
     subgraph OUTPUT["OUTPUT"]
-        CLAUDE --> DISPLAY(["Ranked Results\n─────────────────────\n#1  Focus Flow  —  LoRoom\n'LoRoom's slow-tempo lofi style creates\nthe distraction-free environment you\nneed for late-night studying.'\n\n#2  Quiet Study Hall  —  The Ivory Ensemble\n'Minimal classical pieces keep your\nattention inward — no lyrics, no\nsudden energy spikes.'"])
+        GEMINI --> DISPLAY(["3 Ranked Results\n─────────────────────\n#1  Focus Flow  —  LoRoom\n'LoRoom's slow-tempo lofi style creates\nthe distraction-free environment you\nneed for late-night studying.'\n\n#2  Quiet Study Hall  —  The Ivory Ensemble\n'Minimal classical pieces keep your\nattention inward — no lyrics, no\nsudden energy spikes.'\n\n#3  ..."])
     end
 
     STARTUP --> INPUT
@@ -67,7 +67,7 @@ flowchart TD
 
     style BUILD fill:#3d2800,color:#ffffff,stroke:#f39c12
 
-    style CLAUDE fill:#0f3320,color:#ffffff,stroke:#2ecc71
+    style GEMINI fill:#0f3320,color:#ffffff,stroke:#2ecc71
 
     style DISPLAY fill:#1a5c38,color:#ffffff,stroke:#2ecc71
 ```
